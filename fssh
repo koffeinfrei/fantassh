@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+# vim: set ft=ruby:
+
+require 'fileutils'
+
+save_file = File.join(Dir.home, '.fantassh')
+FileUtils.touch(save_file)
+stored_commands = File.readlines(save_file)
+new_commands = File.readlines(File.join(Dir.home, '.bash_history')).grep(/^ssh/).uniq.
+  map { |x| x.gsub(/^ssh/, '') }
+all_commands = (stored_commands + new_commands).map(&:strip).uniq
+
+File.open(save_file, 'w') do |f|
+  f.write(all_commands.join("\n"))
+end
+
+exec "ssh $(cat #{save_file} | selecta)"
