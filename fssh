@@ -3,15 +3,46 @@
 
 require 'fileutils'
 
-save_file = File.join(Dir.home, '.fantassh')
-FileUtils.touch(save_file)
-stored_commands = File.readlines(save_file)
-new_commands = File.readlines(File.join(Dir.home, '.bash_history')).grep(/^ssh/).uniq.
-  map { |x| x.gsub(/^ssh/, '') }
-all_commands = (stored_commands + new_commands).map(&:strip).uniq
+class Store
+  attr_reader :file_path
 
-File.open(save_file, 'w') do |f|
-  f.write(all_commands.join("\n"))
+  def initialize
+    @file_path = File.join(Dir.home, '.fantassh')
+    FileUtils.touch(@file_path)
+  end
+
+  def entries
+    File.readlines(@file_path)
+  end
+
+  def add(new_entries)
+    entries = (self.entries + new_entries).map(&:strip).uniq
+
+    File.open(@file_path, 'w') do |f|
+      f.puts(entries)
+    end
+  end
 end
 
-exec "ssh $(cat #{save_file} | selecta)"
+class BashHistory
+  def entries
+    File.readlines(File.join(Dir.home, '.bash_history')).
+      grep(/^ssh/).
+      uniq.
+      map { |x| x.gsub(/^ssh/, '') }
+  end
+end
+
+class FantaSsh
+  def initialize
+    @store = Store.new
+    @bash_history = BashHistory.new
+  end
+
+  def run
+    @store.add(@bash_history.entries)
+    exec "ssh $(cat #{@store.file_path} | selecta)"
+  end
+end
+
+FantaSsh.new.run
