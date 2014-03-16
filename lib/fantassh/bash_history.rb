@@ -2,10 +2,10 @@ module Fantassh
   class BashHistory
     def entries
       File.readlines(File.join(Dir.home, '.bash_history')).
-        grep(/^ssh/).
+        grep(/^\s*ssh/).
+        map(&:strip).
         uniq.
-        map { |x| x.gsub(/^ssh/, '') }.
-        map(&:strip)
+        map { |x| x.gsub(/^ssh\s+/, '') }
     end
   end
 end
