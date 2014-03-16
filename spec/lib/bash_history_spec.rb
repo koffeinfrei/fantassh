@@ -7,13 +7,13 @@ module Fantassh
 
     context "#entries" do
       it "returns entries that start with 'ssh'" do
-        File.stub(readlines: ['ssh host1.com', 'host2.com', ''])
+        File.stub(readlines: ["ssh host1.com\n", "host2.com\n", "\n"])
 
         subject.entries.should == ['host1.com']
       end
 
       it "ignores duplicates" do
-        File.stub(readlines: ['ssh host1.com', 'ssh host1.com'])
+        File.stub(readlines: ["ssh host1.com\n", "ssh host1.com\n"])
 
         subject.entries.should == ['host1.com']
       end

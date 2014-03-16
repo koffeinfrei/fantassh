@@ -12,11 +12,11 @@ module Fantassh
     end
 
     def all
-      File.readlines(@entries_file)
+      File.readlines(@entries_file).map(&:strip)
     end
 
     def excluded
-      File.readlines(@excluded_entries_file)
+      File.readlines(@excluded_entries_file).map(&:strip)
     end
 
     def add(new_entries)
