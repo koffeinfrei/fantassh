@@ -6,8 +6,15 @@ module Fantassh
     subject { BashHistory.new }
 
     context "#entries" do
-      it "returns entries that start with 'ssh'" do
+      it "returns entries that start with 'ssh '" do
         File.stub(readlines: ["ssh host1.com\n", "host2.com\n", "\n"])
+
+        subject.entries.should == ['host1.com']
+      end
+
+      it "doesn't return entries that start with 'ssh*'" do
+        File.stub(readlines: ["ssh host1.com\n",
+                              "ssh-keygen -t rsa -C 'a@a.com'\n", "\n"])
 
         subject.entries.should == ['host1.com']
       end
