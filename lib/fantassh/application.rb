@@ -22,7 +22,7 @@ module Fantassh
         bash_history = BashHistory.new
         entries.add(bash_history.entries)
         # indent by whitespace so it doesn't show up in the history
-        exec " ssh $(cat #{entries.entries_file} | selecta)"
+        exec %Q[ ssh $(echo '#{entries.all.join("\n")}' | selecta)]
       end
     end
   end

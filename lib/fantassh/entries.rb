@@ -1,39 +1,26 @@
-require 'fileutils'
+require_relative 'entries_file'
+require_relative 'excluded_entries_file'
 
 module Fantassh
   class Entries
-    attr_reader :entries_file
+    def initialize(entries_file: EntriesFile.new, excluded_entries_file: ExcludedEntriesFile.new)
+      @entries_file = entries_file
+      @excluded_entries_file = excluded_entries_file
 
-    def initialize(config_dir: nil)
-      @config_dir = config_dir || File.join(Dir.home, '.fantassh')
-      @entries_file = File.join(@config_dir, 'entries')
-      @excluded_entries_file = File.join(@config_dir, 'excluded_entries')
       init_file_structure
     end
 
+    def add(entries)
+      @entries_file.add(entries)
+    end
+
     def all
-      File.readlines(@entries_file).map(&:strip)
-    end
-
-    def excluded
-      File.readlines(@excluded_entries_file).map(&:strip)
-    end
-
-    def add(new_entries)
-      new_entries = new_entries.map(&:strip).delete_if { |x| x.empty? }
-      entries = (all + new_entries).uniq - excluded
-
-      File.open(@entries_file, 'w') do |f|
-        f.puts(entries)
-      end
+      @entries_file.all - @excluded_entries_file.all
     end
 
     def init_file_structure
-      unless Dir.exist?(@config_dir)
-        FileUtils.mkdir(@config_dir)
-      end
-      FileUtils.touch(@entries_file)
-      FileUtils.touch(@excluded_entries_file)
+      @entries_file.init_file_structure
+      @excluded_entries_file.init_file_structure
     end
   end
 end

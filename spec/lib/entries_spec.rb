@@ -3,66 +3,35 @@ require 'fantassh/entries'
 
 module Fantassh
   describe Entries do
-    before { Entries.any_instance.stub(:init_file_structure) }
-    subject { Entries.new(config_dir: '/dir') }
+    let(:entries_file) { double(:entries_file) }
 
-    context "#excluded" do
-      it "returns the hidden entries" do
-        File.should_receive(:readlines).and_return(["host1.com\n"])
+    let(:excluded_entries_file) { double(:excluded_entries_file) }
 
-        subject.excluded.should == ['host1.com']
+    context "#initialize" do
+      it "calls init_file_structure on both entry files" do
+        entries_file.should_receive(:init_file_structure)
+        excluded_entries_file.should_receive(:init_file_structure)
+
+        Entries.new(entries_file: entries_file, excluded_entries_file: excluded_entries_file)
       end
     end
 
     context "#all" do
-      it "returns all entries" do
-        File.should_receive(:readlines).with('/dir/entries').
-          and_return(["host1.com\n", "user@host2.com\n"])
+      before { Entries.any_instance.stub(:init_file_structure) }
 
-        subject.all.should == ['host1.com', 'user@host2.com']
-      end
-    end
+      it "returns an entry" do
+        entries_file.should_receive(:all).and_return(["host1.com"])
 
-    context "#add" do
-      before do
-        file = double('file')
-        File.should_receive(:open).with('/dir/entries', 'w').and_yield(file)
-        file.should_receive(:puts).with(["host1.com"])
+        Entries.new(entries_file: entries_file).all.should ==
+          ["host1.com"]
       end
 
-      it "adds a new entry" do
-        subject.stub(all: [])
-        subject.stub(excluded: [])
+      it "doesn't return a hidden entry" do
+        entries_file.should_receive(:all).and_return(["host1.com"])
+        excluded_entries_file.should_receive(:all).and_return(["user@host2.com"])
 
-        subject.add(["host1.com"])
-      end
-
-      it "doesn't add a duplicate" do
-        subject.stub(all: ["host1.com"])
-        subject.stub(excluded: [])
-
-        subject.add(["host1.com"])
-      end
-
-      it "doesn't add a hidden entry" do
-        subject.stub(all: ["host1.com"])
-        subject.stub(excluded: ["user@host2.com"])
-
-        subject.add(["user@host2.com"])
-      end
-
-      it "doesn't add an empty entry" do
-        subject.stub(all: ["host1.com"])
-        subject.stub(excluded: [])
-
-        subject.add([''])
-      end
-
-      it "removes leading and trailing whitespace" do
-        subject.stub(all: [])
-        subject.stub(excluded: [])
-
-        subject.add(["  host1.com\n\n"])
+        Entries.new(entries_file: entries_file, excluded_entries_file: excluded_entries_file).
+          all.should == ["host1.com"]
       end
     end
   end
