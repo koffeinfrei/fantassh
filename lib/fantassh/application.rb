@@ -9,6 +9,7 @@ module Fantassh
         Slop.parse(argv, help: true) do
           on '-v', '--version', 'Print the program version.' do
             puts "#{File.basename($0)} v#{Fantassh::VERSION}"
+            exit
           end
 
           # default, runs when called without arguments
