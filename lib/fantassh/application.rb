@@ -34,8 +34,13 @@ module Fantassh
 
       def list
         entries.add(bash_history.entries)
-        # indent by whitespace so it doesn't show up in the history
-        exec %Q[ ssh $(echo '#{entries.all.join("\n")}' | selecta)]
+
+        selected_entry = `echo '#{entries.all.join("\n")}' | selecta`
+        # in case selecta receives ctrl+c we don't proceed
+        unless selected_entry.empty?
+          # indent by whitespace so it doesn't show up in the history
+          exec " ssh #{selected_entry}"
+        end
       end
 
       def exclude(entry)
