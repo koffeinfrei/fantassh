@@ -18,6 +18,10 @@ module Fantassh
       @entries_file.all - @excluded_entries_file.all
     end
 
+    def exclude(entries)
+      @excluded_entries_file.add(entries)
+    end
+
     def init_file_structure
       @entries_file.init_file_structure
       @excluded_entries_file.init_file_structure
