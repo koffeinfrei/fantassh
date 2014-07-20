@@ -10,9 +10,13 @@ module Fantassh
       File.readlines(file).map(&:strip)
     end
 
-    def add(new_entries)
-      new_entries = new_entries.map(&:strip).delete_if { |x| x.empty? }
-      entries = (all + new_entries).uniq
+    def add(new_entries, reject_duplicates: true)
+      new_entries = new_entries.map(&:strip).reject(&:empty?)
+      entries = all + new_entries
+
+      if reject_duplicates
+        entries.uniq!
+      end
 
       File.open(file, 'w') do |f|
         f.puts(entries)
